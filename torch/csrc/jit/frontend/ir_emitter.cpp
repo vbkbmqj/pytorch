@@ -636,6 +636,16 @@ struct to_ir {
     }
     method.setSchema(emitDef(def, self, graph->block()));
 
+    // check schemas for hooks and prehooks
+    if (self) {
+      const auto class_self = self->getClassType();
+      if (class_self->findForwardHook(method.name())) {
+        class_self->checkForwardHookSchema(class_self->getForwardHooks().size() - 1);
+      } else if (class_self->findForwardPreHook(method.name())) {
+        class_self->checkForwardPreHookSchema(class_self->getForwardPreHooks().size() - 1);
+      }
+    }
+
     // NB ORDERING: SSA conversion has to occur before
     // lifting of closures and forks, this way closures are converted
     // to SSA while part of their original graph, and closures are ready to
@@ -4291,6 +4301,8 @@ void CompilationUnit::define_hooks(
     function_table[fn->name()] = fn.get();
     functions.emplace_back(fn.get());
     this->register_function(std::move(fn));
+    ErrorReport::HintStack hint(
+        self->getClassType()->getForwardHookErrorMessage(i));
     functions.back()->ensure_defined();
   }
 
@@ -4316,6 +4328,8 @@ void CompilationUnit::define_hooks(
     function_table[fn->name()] = fn.get();
     functions.emplace_back(fn.get());
     this->register_function(std::move(fn));
+    ErrorReport::HintStack hint(
+        self->getClassType()->getForwardPreHookErrorMessage(i));
     functions.back()->ensure_defined();
   }
 }
