@@ -230,7 +230,7 @@ class LazyLinear(LazyModuleMixin, Linear):
 
 
 
-class View(torch.nn.Module):
+class View(Module):
     def __init__(self, *shape):
         super(View, self).__init__()
         self.shape = (-1,) if len(shape) == 0 else shape
