@@ -225,4 +225,13 @@ class LazyLinear(LazyModuleMixin, Linear):
                 self.in_features = input.shape[-1]
                 self.weight.materialize((self.out_features, self.in_features))
                 self.reset_parameters()
+                
+class View(torch.nn.Module):
+    def __init__(self, *shape):
+        super(View, self).__init__()
+        self.shape = (-1,) if len(shape) == 0 else shape
+
+    def forward(self, x):
+        x = x.view(x.size(0), *self.shape)
+        return x
 # TODO: PartialLinear - maybe in sparse?
